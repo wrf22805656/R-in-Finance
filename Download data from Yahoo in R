@@ -1,0 +1,42 @@
+install.packages("quantmod")
+library("quantmod")
+
+#Set the working environment
+getwd()
+setwd("C:/Users/WRF/Desktop/finance project/Professor McFarland/Download data/")
+
+rm(list=ls())
+
+#Loading the Gas&Oil stocks/ETFs list
+Stock_ETF_list <- read.table("final_data.txt",header=TRUE)
+nrow(Stock_ETF_list)
+
+Symbols <- vector(mode="character", length =175)
+for (i in 1:nrow(Stock_ETF_list))
+  {
+  Symbols[i] <- as.character(Stock_ETF_list[i,1])
+  }
+length(Symbols)
+print(Symbols)
+
+ 
+#Create new enviroment to contain stock price data
+dataEnv <- new.env()
+
+
+#Download data
+getSymbols(Symbols, src="yahoo" , from = as.Date("2010-01-01"), to = as.Date("2017-01-31"), env=dataEnv)
+dataEnv$AE
+dataEnv$AREX
+
+
+
+#Load Systematic investor toolbox for helpful functions
+setInternet2(TRUE)
+con = gzcon(url('https://github.com/systematicinvestor/SIT/raw/master/sit.gz', 'rb'))
+source(con)
+close(con)
+
+
+
+
