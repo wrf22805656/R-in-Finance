@@ -1,0 +1,49 @@
+# WRDB
+
+# These following two R-specific configuration files that provide the necessary supporting information to prepare your environment.
+# There two files are located here: ~/.Rprofile and ~/.Renviron
+# ~Rprofile 
+# The first cofiguration file (.Rprofile) loads necessary R modules, builds a connection method to WRDS including your
+# credentials, and automatically connects each time you run R. The second file (.Renviron) establishes the location of the
+# necessary driver files that the connection uses to access not need to edit these files again.
+
+
+getwd()
+setwd("C:/Users/my_user/")
+
+install.packages("rJava")
+install.packages("RJDBC")
+library("rJava")
+# if you cant load(rJava) you may need to reinstall your Java environment 
+# install.packages("https://cran.rstudio.com/bin/windows/contrib/3.0/rJava_0.9-6.zip",repos = NULL, type="source")
+options(java.parameters = '-Xmx4g')
+
+library(RJDBC)
+
+user <- "wrf"
+pass <- '{SAS002}B8030855127146F620117B353B43AC441DB9D6DC2FFC130A'
+
+wrdsconnect <- function(user=user, pass=pass){
+  drv <- JDBC("com.sas.net.sharenet.ShareNetDriver", "C:/Users/my_user/My Documents/WRDS_Drivers/sas.intrnet.javatools.jar", identifier.quote="`")
+  wrds <- RJDBC::dbConnect(drv, "jdbc:sharenet://wrds-cloud.wharton.upenn.edu:8551/", user, pass)
+  return(wrds)
+}
+
+.First <- function(){
+  wrds <<- wrdsconnect(user=user, pass=pass)
+}
+
+.Last <- function(){
+  dbDisconnect(wrds)
+}
+
+#  ~/.Renviron
+CLASSPATH="C:/Users/my_user/My Documents/WRDS_Drivers/sas.core.jar: C:/Users/my_user/My Documents/WRDS_Drivers/sas.intrnet.javatools.jar"
+
+wrds <- wrdsconnect(user=user, pass=pass)
+.jaddClassPath(c("C:/Users/my_user/My Documents/WRDS_Drivers/sas.core.jar","C:/Users/my_user/My Documents/WRDS_Drivers/sas.intrnet.javatools.jar"))
+###################################################################################
+## SHOW RESULTS ##
+res <- dbSendQuery(wrds, "select * from CRSP.DSF (obs=10)")
+data <- fetch(res, n = -1)
+data
